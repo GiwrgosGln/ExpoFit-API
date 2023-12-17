@@ -7,7 +7,7 @@ import (
 	"os"
 
 	"FitnessAPI/database"
-	"FitnessAPI/handlers"
+	"FitnessAPI/routes"
 
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -15,6 +15,8 @@ import (
 
 var usersCollection *mongo.Collection
 var exercisesCollection *mongo.Collection
+var workoutsCollection *mongo.Collection
+var routinesCollection *mongo.Collection
 
 func main() {
 	r := gin.Default()
@@ -34,39 +36,19 @@ func main() {
 	}
 
 	// Connect to "Workouts" collection
-	workoutsCollection, err := database.ConnectMongoDB("Workouts")
+	workoutsCollection, err = database.ConnectMongoDB("Workouts")
 	if err != nil {
 		log.Fatal("Error connecting to Workouts collection:", err)
 	}
 
 	// Connect to "Routines" collection
-	routinesCollection, err := database.ConnectMongoDB("Routines")
+	routinesCollection, err = database.ConnectMongoDB("Routines")
 	if err != nil {
 		log.Fatal("Error connecting to Routines collection:", err)
 	}
 
-	// Define endpoint for registering users
-	r.POST("/register", func(c *gin.Context) {
-		handlers.RegisterHandler(c, usersCollection)
-	})
-	
-
-	// Define endpoint for getting all exercises
-	r.GET("/exercises", func(c *gin.Context) {
-		handlers.GetAllExercisesHandler(c, exercisesCollection)
-	})
-
-	// Register the endpoint for saving workouts
-	r.POST("/workouts", func(c *gin.Context) {
-		handlers.SaveWorkoutHandler(c, workoutsCollection)
-	})
-
-	// Create a new routine
-	r.POST("/create-routine", func(c *gin.Context) {
-		handlers.CreateRoutineHandler(c, routinesCollection)
-	})
-
-	// Set up additional endpoints as needed
+	// Initialize routes
+	routes.SetupRoutes(r, usersCollection, exercisesCollection, workoutsCollection, routinesCollection)
 
 	port := os.Getenv("PORT")
 	if port == "" {
