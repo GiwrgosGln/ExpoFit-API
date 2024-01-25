@@ -31,7 +31,7 @@ func SetupRoutes(r *gin.Engine, usersCollection, exercisesCollection, workoutsCo
 
 	// Fetch a routine by ID
 	r.GET("/routines/:id", func(c *gin.Context) {
-		handlers.GetRoutineHandler(c, routinesCollection)
+		handlers.GetRoutinesByUserIDHandler(c, routinesCollection)
 	})
 	
 	

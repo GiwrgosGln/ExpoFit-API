@@ -33,29 +33,44 @@ func CreateRoutineHandler(c *gin.Context, collection *mongo.Collection) {
 	c.JSON(http.StatusCreated, gin.H{"id": routine.ID})
 }
 
-// GetRoutineHandler handles the fetching of a routine by UserID.
-func GetRoutineHandler(c *gin.Context, collection *mongo.Collection) {
+// GetRoutinesByUserIDHandler handles the fetching of all routines with a specific UserID.
+func GetRoutinesByUserIDHandler(c *gin.Context, collection *mongo.Collection) {
 	// Get the user ID from the request parameters
 	userID := c.Param("id")
 
-	// Define a filter to find the routine by UserID
+	// Define a filter to find all routines by UserID
 	filter := bson.M{"userid": userID}
 
-	// Find the routine in MongoDB
-	var routine models.Routine
-	err := collection.FindOne(context.Background(), filter).Decode(&routine)
+	// Find all routines in MongoDB
+	cursor, err := collection.Find(context.Background(), filter)
 	if err != nil {
-		if err == mongo.ErrNoDocuments {
-			c.JSON(http.StatusNotFound, gin.H{"error": "Routine not found"})
+		log.Printf("Error fetching routines: %v\n", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch routines"})
+		return
+	}
+	defer cursor.Close(context.Background())
+
+	// Iterate over the cursor and collect routines
+	var routines []models.Routine
+	for cursor.Next(context.Background()) {
+		var routine models.Routine
+		if err := cursor.Decode(&routine); err != nil {
+			log.Printf("Error decoding routine: %v\n", err)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to decode routine"})
 			return
 		}
-		log.Printf("Error fetching routine: %v\n", err)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch routine"})
+		routines = append(routines, routine)
+	}
+
+	// Check if any routines were found
+	if len(routines) == 0 {
+		c.JSON(http.StatusNotFound, gin.H{"error": "No routines found"})
 		return
 	}
 
-	// Return the routine as part of the response
-	c.JSON(http.StatusOK, routine)
+	// Return the routines as part of the response
+	c.JSON(http.StatusOK, routines)
 }
+
 
 
