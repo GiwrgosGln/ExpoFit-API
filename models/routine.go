@@ -1,4 +1,3 @@
-// routine.go
 package models
 
 // Routine represents a routine document.
@@ -8,7 +7,3 @@ type Routine struct {
 	Title     string     `json:"title"`
 	Exercises []Exercise `json:"exercises"`
 }
-
-
-// SetType represents the type of a set.
-type SetType string
