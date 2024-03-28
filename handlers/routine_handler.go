@@ -9,6 +9,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -70,6 +71,40 @@ func GetRoutinesByUserIDHandler(c *gin.Context, collection *mongo.Collection) {
 
 	// Return the routines as part of the response
 	c.JSON(http.StatusOK, routines)
+}
+
+// DeleteRoutineHandler handles the deletion of a routine by ID.
+func DeleteRoutineHandler(c *gin.Context, collection *mongo.Collection) {
+    // Get the routine ID from the request parameters
+    routineID := c.Param("id")
+
+    // Convert the routine ID to an ObjectId
+    objID, err := primitive.ObjectIDFromHex(routineID)
+    if err != nil {
+        // Return error response if the ID is invalid
+        c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid routine ID"})
+        return
+    }
+
+    // Define a filter to find the routine by ID
+    filter := bson.M{"_id": objID}
+
+    // Delete the routine from MongoDB
+    result, err := collection.DeleteOne(context.Background(), filter)
+    if err != nil {
+        log.Printf("Error deleting routine: %v\n", err)
+        c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete routine"})
+        return
+    }
+
+    // Check if any routines were deleted
+    if result.DeletedCount == 0 {
+        c.JSON(http.StatusNotFound, gin.H{"error": "No routine found with specified ID"})
+        return
+    }
+
+    // Return success message
+    c.JSON(http.StatusOK, gin.H{"message": "Routine deleted successfully"})
 }
 
 

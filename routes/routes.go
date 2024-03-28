@@ -1,4 +1,3 @@
-// routes.go
 package routes
 
 import (
@@ -29,10 +28,17 @@ func SetupRoutes(r *gin.Engine, usersCollection, exercisesCollection, workoutsCo
 		handlers.CreateRoutineHandler(c, routinesCollection)
 	})
 
-	// Fetch a routine by ID
+	// Fetch a routines by UserId
 	r.GET("/routines/:id", func(c *gin.Context) {
 		handlers.GetRoutinesByUserIDHandler(c, routinesCollection)
 	})
+
+	// Delete a routine by ID
+	r.DELETE("/delete-routine/:id", func(c *gin.Context) {
+		handlers.DeleteRoutineHandler(c, routinesCollection)
+	})
+
+
 	
 	
 }
