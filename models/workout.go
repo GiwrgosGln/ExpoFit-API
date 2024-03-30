@@ -24,5 +24,5 @@ type Set struct {
 	Type   string `json:"type"`
 	Reps   int    `json:"reps"`
 	Weight int    `json:"weight"`
-	RPE    int    `json:"rpe"`
+	RPE    string    `json:"rpe"`
 }
