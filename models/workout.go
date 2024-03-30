@@ -1,26 +1,28 @@
 package models
 
-import (
-	"time"
-)
+import "time"
 
-// ExerciseSet represents a set of exercises in a workout.
-type ExerciseSet struct {
-	Reps int     `json:"reps"`
-	KG   float64 `json:"kg"`
-	RPE  float64 `json:"rpe"`
+// ExerciseInWorkout represents an exercise within a workout, excluding unnecessary fields.
+type ExerciseInWorkout struct {
+	ID     string `json:"_id" bson:"_id,omitempty"`
+	ExerciseID string `json:"exercise_id" bson:"exercise_id"`
+	Name   string `json:"name" bson:"name"`
+	Sets   []Set  `json:"sets" bson:"sets"`
 }
 
-// WorkoutExercise represents an exercise in a workout.
-type WorkoutExercise struct {
-	Sets []ExerciseSet `json:"sets"`
-}
-
-// Workout represents a workout document.
+// Workout represents a workout.
 type Workout struct {
-	ID        string                     `json:"_id,omitempty" bson:"_id,omitempty"`
-	UserID    string                     `json:"userID"`
-	Date      time.Time                  `json:"date"`
-	Exercises map[string]WorkoutExercise `json:"exercises"`
-	Duration  time.Duration              `json:"duration"`
+	ID        string               `json:"id" bson:"_id,omitempty"`
+	UserID    string               `json:"user_id" bson:"user_id"`
+	Title     string               `json:"title"`
+	Date      time.Time            `json:"date"`
+	Exercises []ExerciseInWorkout `json:"exercises"`
+}
+
+// Set represents a set within an exercise.
+type Set struct {
+	Type   string `json:"type"`
+	Reps   int    `json:"reps"`
+	Weight int    `json:"weight"`
+	RPE    int    `json:"rpe"`
 }
