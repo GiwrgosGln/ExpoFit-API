@@ -14,7 +14,6 @@ type ExerciseInWorkout struct {
 type Workout struct {
 	ID        string               `json:"id" bson:"_id,omitempty"`
 	UserID    string               `json:"user_id" bson:"user_id"`
-	Title     string               `json:"title"`
 	Date      time.Time            `json:"date"`
 	Exercises []ExerciseInWorkout `json:"exercises"`
 }
