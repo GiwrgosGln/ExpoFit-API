@@ -1,27 +1,26 @@
 package models
 
-import "time"
+import (
+	"time"
+)
 
-// ExerciseInWorkout represents an exercise within a workout, excluding unnecessary fields.
-type ExerciseInWorkout struct {
-	ID     string `json:"_id" bson:"_id,omitempty"`
-	ExerciseID string `json:"exercise_id" bson:"exercise_id"`
-	Name   string `json:"name" bson:"name"`
-	Sets   []Set  `json:"sets" bson:"sets"`
+// ExerciseSet represents a set of exercises in a workout.
+type ExerciseSet struct {
+	Reps *int     `json:"reps,omitempty" bson:"reps,omitempty"` // Use pointer to int to allow null values
+	KG   *float64 `json:"kg,omitempty" bson:"kg,omitempty"`     // Use pointer to float64 to allow null values
+	RPE  *float64 `json:"rpe,omitempty" bson:"rpe,omitempty"`   // Use pointer to float64 to allow null values
 }
 
-// Workout represents a workout.
+// WorkoutExercise represents an exercise in a workout.
+type WorkoutExercise struct {
+	Sets []ExerciseSet `json:"sets"`
+}
+
+// Workout represents a workout document.
 type Workout struct {
-	ID        string               `json:"id" bson:"_id,omitempty"`
-	UserID    string               `json:"user_id" bson:"user_id"`
-	Date      time.Time            `json:"date"`
-	Exercises []ExerciseInWorkout `json:"exercises"`
-}
-
-// Set represents a set within an exercise.
-type Set struct {
-	Type   string `json:"type"`
-	Reps   int    `json:"reps"`
-	Weight int    `json:"weight"`
-	RPE    string    `json:"rpe"`
+	ID        string                     `json:"_id,omitempty" bson:"_id,omitempty"`
+	UserID    string                     `json:"userID"`
+	Date      time.Time                  `json:"date"`
+	Exercises map[string]WorkoutExercise `json:"exercises"`
+	Duration  time.Duration              `json:"duration"`
 }
