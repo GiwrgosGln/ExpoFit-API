@@ -21,7 +21,7 @@ type Workout struct {
 // Set represents a set within an exercise.
 type Set struct {
 	Type   string `json:"type"`
-	Reps   int    `json:"reps"`
-	Weight int    `json:"weight"`
-	RPE    string    `json:"rpe"`
+	Reps   *int    `json:"reps"`
+	Weight *int    `json:"weight"`
+	RPE    *string    `json:"rpe"`
 }
