@@ -6,9 +6,9 @@ import (
 
 // ExerciseSet represents a set of exercises in a workout.
 type ExerciseSet struct {
-	Reps *int     `json:"reps,omitempty" bson:"reps,omitempty"` // Use pointer to int to allow null values
-	KG   *float64 `json:"kg,omitempty" bson:"kg,omitempty"`     // Use pointer to float64 to allow null values
-	RPE  *float64 `json:"rpe,omitempty" bson:"rpe,omitempty"`   // Use pointer to float64 to allow null values
+	Reps int     `json:"reps"`
+	KG   float64 `json:"kg"`
+	RPE  float64 `json:"rpe"`
 }
 
 // WorkoutExercise represents an exercise in a workout.
