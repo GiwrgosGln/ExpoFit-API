@@ -23,6 +23,10 @@ func SetupRoutes(r *gin.Engine, usersCollection, exercisesCollection, workoutsCo
 		handlers.SaveWorkoutHandler(c, workoutsCollection)
 	})
 
+	r.GET("/workouts/:userID", func(c *gin.Context) {
+		handlers.GetWorkoutsByUserIDHandler(c, workoutsCollection)
+	})
+
 	// Create a new routine
 	r.POST("/create-routine", func(c *gin.Context) {
 		handlers.CreateRoutineHandler(c, routinesCollection)
