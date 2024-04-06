@@ -32,6 +32,11 @@ func SetupRoutes(r *gin.Engine, usersCollection, exercisesCollection, workoutsCo
 		handlers.GetWorkoutsByUserIDHandler(c, workoutsCollection)
 	})
 
+	// Delete a workout by ID
+	r.DELETE("/delete-workout/:id", func(c *gin.Context) {
+		handlers.DeleteWorkoutHandler(c, workoutsCollection)
+	})
+
 	// Create a new routine
 	r.POST("/create-routine", func(c *gin.Context) {
 		handlers.CreateRoutineHandler(c, routinesCollection)

@@ -10,6 +10,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -75,4 +76,38 @@ func SaveWorkoutHandler(c *gin.Context, collection *mongo.Collection) {
 
 	// Return the _id as part of the response
 	c.JSON(http.StatusCreated, gin.H{"id": workout.ID})
+}
+
+// DeleteWorkoutHandler handles the deletion of a workout by ID.
+func DeleteWorkoutHandler(c *gin.Context, collection *mongo.Collection) {
+    // Get the workout ID from the request parameters
+    workoutID := c.Param("id")
+
+    // Convert the workout ID to an ObjectId
+    objID, err := primitive.ObjectIDFromHex(workoutID)
+    if err != nil {
+        // Return error response if the ID is invalid
+        c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid workout ID"})
+        return
+    }
+
+    // Define a filter to find the workout by ID
+    filter := bson.M{"_id": objID}
+
+    // Delete the workout from MongoDB
+    result, err := collection.DeleteOne(context.Background(), filter)
+    if err != nil {
+        log.Printf("Error deleting workout: %v\n", err)
+        c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete workout"})
+        return
+    }
+
+    // Check if any workouts were deleted
+    if result.DeletedCount == 0 {
+        c.JSON(http.StatusNotFound, gin.H{"error": "No workout found with specified ID"})
+        return
+    }
+
+    // Return success message
+    c.JSON(http.StatusOK, gin.H{"message": "Routine deleted successfully"})
 }
