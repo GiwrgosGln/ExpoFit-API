@@ -109,3 +109,40 @@ func DeleteRoutineHandler(c *gin.Context, collection *mongo.Collection) {
 
 
 
+// EditRoutineHandler handles the editing of an existing routine.
+func EditRoutineHandler(c *gin.Context, collection *mongo.Collection) {
+    // Get the routine ID from the request parameters
+    routineID := c.Param("id")
+
+    // Convert the routine ID to an ObjectId
+    objID, err := primitive.ObjectIDFromHex(routineID)
+    if err != nil {
+        // Return error response if the ID is invalid
+        c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid routine ID"})
+        return
+    }
+
+    // Define a filter to find the routine by ID
+    filter := bson.M{"_id": objID}
+
+    // Define a struct to hold the updated routine data
+    var updatedRoutine models.Routine
+
+    // Bind the request body to the updatedRoutine struct
+    if err := c.ShouldBindJSON(&updatedRoutine); err != nil {
+        c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+        return
+    }
+
+    // Update the routine in MongoDB
+    update := bson.M{"$set": updatedRoutine}
+    _, err = collection.UpdateOne(context.Background(), filter, update)
+    if err != nil {
+        log.Printf("Error updating routine: %v\n", err)
+        c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update routine"})
+        return
+    }
+
+    // Return success message
+    c.JSON(http.StatusOK, gin.H{"message": "Routine updated successfully"})
+}

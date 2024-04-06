@@ -42,9 +42,14 @@ func SetupRoutes(r *gin.Engine, usersCollection, exercisesCollection, workoutsCo
 		handlers.CreateRoutineHandler(c, routinesCollection)
 	})
 
-	// Fetch a routines by UserId
+	// Fetch a routine by UserId
 	r.GET("/routines/:id", func(c *gin.Context) {
 		handlers.GetRoutinesByUserIDHandler(c, routinesCollection)
+	})
+
+	// Edit a routine by RoutineID
+	r.PATCH("/edit-routine/:id", func(c *gin.Context) {
+		handlers.EditRoutineHandler(c, routinesCollection)
 	})	
 
 	// Delete a routine by ID
