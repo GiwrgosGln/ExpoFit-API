@@ -1,6 +1,6 @@
 package models
 
-// Routine represents a routine document.
+// Routine represents a routine document
 type Routine struct {
 	ID        string     `json:"_id,omitempty" bson:"_id,omitempty"`
 	UserID    string     `json:"userID"`
