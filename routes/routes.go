@@ -13,6 +13,11 @@ func SetupRoutes(r *gin.Engine, usersCollection, exercisesCollection, workoutsCo
 		handlers.RegisterHandler(c, usersCollection)
 	})
 
+	// Define endpoint for getting a user by their ID
+	r.GET("/user/:id", func(c *gin.Context) {
+		handlers.GetUserHandler(c, usersCollection)
+	})
+
 	// Define endpoint for getting all exercises
 	r.GET("/exercises", func(c *gin.Context) {
 		handlers.GetAllExercisesHandler(c, exercisesCollection)
