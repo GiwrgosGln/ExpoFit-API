@@ -52,3 +52,37 @@ func GetUserHandler(c *gin.Context, collection *mongo.Collection) {
 	// Return user data
 	c.JSON(http.StatusOK, user)
 }
+
+// EditUserHandler is responsible for updating user information in the database.
+func EditUserHandler(c *gin.Context, collection *mongo.Collection) {
+	// Get user ID from path parameter
+	userID := c.Param("id")
+
+	// Create a struct to hold the updated user data
+	var updatedUser models.User
+	if err := c.ShouldBindJSON(&updatedUser); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Update the user in MongoDB
+	filter := bson.M{"_id": userID}
+	update := bson.M{
+		"$set": bson.M{
+			"username":     updatedUser.Username,
+			"email":        updatedUser.Email,
+			"gender":       updatedUser.Gender,
+			"date_of_birth": updatedUser.DateOfBirth,
+		},
+	}
+
+	_, err := collection.UpdateOne(context.Background(), filter, update)
+	if err != nil {
+		log.Printf("Error updating user: %v\n", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update user"})
+		return
+	}
+
+	// Return success response
+	c.JSON(http.StatusOK, gin.H{"message": "User updated successfully"})
+}
