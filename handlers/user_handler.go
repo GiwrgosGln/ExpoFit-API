@@ -72,7 +72,7 @@ func EditUserHandler(c *gin.Context, collection *mongo.Collection) {
 			"username":     updatedUser.Username,
 			"email":        updatedUser.Email,
 			"gender":       updatedUser.Gender,
-			"date_of_birth": updatedUser.DateOfBirth,
+			"dateofbirth": updatedUser.DateOfBirth,
 		},
 	}
 
