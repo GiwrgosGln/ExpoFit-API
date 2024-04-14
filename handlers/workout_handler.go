@@ -111,3 +111,48 @@ func DeleteWorkoutHandler(c *gin.Context, collection *mongo.Collection) {
     // Return success message
     c.JSON(http.StatusOK, gin.H{"message": "Routine deleted successfully"})
 }
+
+
+// GetWorkoutsPerWeekHandler handles the GET request to fetch workouts per week.
+func GetWorkoutsPerWeekHandler(c *gin.Context, collection *mongo.Collection) {
+	// Extract the user ID from the request path
+	userID := c.Param("userID")
+
+	// Calculate the start of the current week (Monday)
+	currentWeekStart := time.Now().AddDate(0, 0, -int(time.Now().Weekday())+1)
+
+	// Define the start date for the last 5 weeks
+	fiveWeeksAgo := currentWeekStart.AddDate(0, 0, -35)
+
+	// Initialize a map to store workout counts per week
+	workoutsPerWeek := make(map[string]int)
+
+	// Iterate over the last 5 weeks
+	for i := 0; i < 5; i++ {
+		// Define the start and end date for the week
+		weekStart := fiveWeeksAgo.AddDate(0, 0, 7*i)
+		weekEnd := weekStart.AddDate(0, 0, 6)
+
+		// Define a filter to query workouts by user ID and within the week
+		filter := bson.M{
+			"user_id": userID,
+			"date": bson.M{
+				"$gte": weekStart,
+				"$lte": weekEnd.Add(time.Hour * 23).Add(time.Minute * 59).Add(time.Second * 59), // Adding 23 hours, 59 minutes, and 59 seconds to include the whole day
+			},
+		}
+
+		// Execute the count operation to get the number of workouts matching the filter
+		count, err := collection.CountDocuments(context.Background(), filter)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch workouts"})
+			return
+		}
+
+		// Store the workout count for the week
+		workoutsPerWeek[weekStart.Format("2006-01-02")] = int(count)
+	}
+
+	// Return the workout counts per week as a response
+	c.JSON(http.StatusOK, workoutsPerWeek)
+}
