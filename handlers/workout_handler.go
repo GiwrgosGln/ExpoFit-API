@@ -119,7 +119,7 @@ func GetWorkoutsPerWeekHandler(c *gin.Context, collection *mongo.Collection) {
 	userID := c.Param("userID")
 
 	// Calculate the start of the current week (Monday)
-	currentWeekStart := time.Now().AddDate(0, 0, -int(time.Now().Weekday())+1)
+	currentWeekStart := time.Now().AddDate(0, 0, -int(time.Now().Weekday())+1).Truncate(24 * time.Hour) // Truncate time to midnight
 
 	// Define the start date for the last 5 weeks
 	fiveWeeksAgo := currentWeekStart.AddDate(0, 0, -35)
@@ -130,7 +130,7 @@ func GetWorkoutsPerWeekHandler(c *gin.Context, collection *mongo.Collection) {
 	// Iterate over the last 5 weeks
 	for i := 0; i < 5; i++ {
 		// Define the start and end date for the week
-		weekStart := fiveWeeksAgo.AddDate(0, 0, 7*i)
+		weekStart := fiveWeeksAgo.AddDate(0, 0, 7*i).Truncate(24 * time.Hour) // Truncate time to midnight
 		weekEnd := weekStart.AddDate(0, 0, 6)
 
 		// Define a filter to query workouts by user ID and within the week
@@ -138,7 +138,7 @@ func GetWorkoutsPerWeekHandler(c *gin.Context, collection *mongo.Collection) {
 			"user_id": userID,
 			"date": bson.M{
 				"$gte": weekStart,
-				"$lte": weekEnd.Add(time.Hour * 23).Add(time.Minute * 59).Add(time.Second * 59), // Adding 23 hours, 59 minutes, and 59 seconds to include the whole day
+				"$lte": weekEnd.AddDate(0, 0, 1).Add(-time.Second), // Set the end of the day by subtracting one second
 			},
 		}
 
