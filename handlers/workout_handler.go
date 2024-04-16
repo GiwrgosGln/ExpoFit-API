@@ -115,44 +115,48 @@ func DeleteWorkoutHandler(c *gin.Context, collection *mongo.Collection) {
 
 // GetWorkoutsPerWeekHandler handles the GET request to fetch workouts per week.
 func GetWorkoutsPerWeekHandler(c *gin.Context, collection *mongo.Collection) {
-	// Extract the user ID from the request path
-	userID := c.Param("userID")
+    // Extract the user ID from the request path
+    userID := c.Param("userID")
 
-	// Calculate the start of the current week (Monday)
-	currentWeekStart := time.Now().AddDate(0, 0, -int(time.Now().Weekday())+1).Truncate(24 * time.Hour) // Truncate time to midnight
+    // Get the current time in the server's time zone
+    now := time.Now()
 
-	// Define the start date for the last 5 weeks
-	fiveWeeksAgo := currentWeekStart.AddDate(0, 0, -35)
+    // Calculate the start of the current week (Monday) in the server's time zone
+    currentWeekStart := now.AddDate(0, 0, -int(now.Weekday())+1).Truncate(24 * time.Hour)
 
-	// Initialize a map to store workout counts per week
-	workoutsPerWeek := make(map[string]int)
+    // Define the start date for the last 5 weeks to include the current week
+    fiveWeeksAgo := currentWeekStart.AddDate(0, 0, -28)
 
-	// Iterate over the last 5 weeks
-	for i := 0; i < 5; i++ {
-		// Define the start and end date for the week
-		weekStart := fiveWeeksAgo.AddDate(0, 0, 7*i).Truncate(24 * time.Hour) // Truncate time to midnight
-		weekEnd := weekStart.AddDate(0, 0, 6)
+    // Initialize a map to store workout counts per week
+    workoutsPerWeek := make(map[string]int)
 
-		// Define a filter to query workouts by user ID and within the week
-		filter := bson.M{
-			"user_id": userID,
-			"date": bson.M{
-				"$gte": weekStart,
-				"$lte": weekEnd.AddDate(0, 0, 1).Add(-time.Second), // Set the end of the day by subtracting one second
-			},
-		}
+    // Iterate over the last 5 weeks to include the current week
+    for i := 0; i < 5; i++ {
+        // Define the start and end date for the week
+        weekStart := fiveWeeksAgo.AddDate(0, 0, 7*i).Truncate(24 * time.Hour)
+        weekEnd := weekStart.AddDate(0, 0, 6)
 
-		// Execute the count operation to get the number of workouts matching the filter
-		count, err := collection.CountDocuments(context.Background(), filter)
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch workouts"})
-			return
-		}
+        // Define a filter to query workouts by user ID and within the week
+        filter := bson.M{
+            "user_id": userID,
+            "date": bson.M{
+                "$gte": weekStart,
+                "$lte": weekEnd.Add(24*time.Hour).Add(-time.Second), // Set the end of the day by subtracting one second
+            },
+        }
 
-		// Store the workout count for the week
-		workoutsPerWeek[weekStart.Format("2006-01-02")] = int(count)
-	}
+        // Execute the count operation to get the number of workouts matching the filter
+        count, err := collection.CountDocuments(context.Background(), filter)
+        if err != nil {
+            c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch workouts"})
+            return
+        }
 
-	// Return the workout counts per week as a response
-	c.JSON(http.StatusOK, workoutsPerWeek)
+        // Store the workout count for the week
+        workoutsPerWeek[weekStart.Format("2006-01-02")] = int(count)
+    }
+
+    // Return the workout counts per week as a response
+    c.JSON(http.StatusOK, workoutsPerWeek)
 }
+
