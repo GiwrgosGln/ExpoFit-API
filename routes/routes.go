@@ -7,7 +7,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-func SetupRoutes(r *gin.Engine, usersCollection, exercisesCollection, workoutsCollection, routinesCollection *mongo.Collection) {
+func SetupRoutes(r *gin.Engine, usersCollection, exercisesCollection, workoutsCollection, routinesCollection, measurementsCollection *mongo.Collection) {
 	// Define endpoint for registering users
 	r.POST("/register", func(c *gin.Context) {
 		handlers.RegisterHandler(c, usersCollection)
@@ -65,7 +65,18 @@ func SetupRoutes(r *gin.Engine, usersCollection, exercisesCollection, workoutsCo
 		handlers.DeleteRoutineHandler(c, routinesCollection)
 	})
 
+	// Create a new measurement
+	r.POST("/create-measurement", func(c *gin.Context) {
+		handlers.CreateMeasurementHandler(c, measurementsCollection)
+	})
 
-	
-	
+	// Define endpoint for getting all measurements for a user
+	r.GET("/measurements/:userID", func(c *gin.Context) {
+		handlers.GetMeasurementsByUserIDHandler(c, measurementsCollection)
+	})
+
+	// Delete a measurement by ID
+	r.DELETE("/delete-measurement/:id", func(c *gin.Context) {
+		handlers.DeleteMeasurementHandler(c, measurementsCollection)
+	})	
 }

@@ -17,6 +17,7 @@ var usersCollection *mongo.Collection
 var exercisesCollection *mongo.Collection
 var workoutsCollection *mongo.Collection
 var routinesCollection *mongo.Collection
+var measurementsCollection *mongo.Collection
 
 func main() {
 	r := gin.Default()
@@ -47,8 +48,14 @@ func main() {
 		log.Fatal("Error connecting to Routines collection:", err)
 	}
 
+	// Connect to "Measurements" collection
+	measurementsCollection, err = database.ConnectMongoDB("Measurements")
+	if err != nil {
+		log.Fatal("Error connecting to Measurements collection:", err)
+	}
+
 	// Initialize routes
-	routes.SetupRoutes(r, usersCollection, exercisesCollection, workoutsCollection, routinesCollection)
+	routes.SetupRoutes(r, usersCollection, exercisesCollection, workoutsCollection, routinesCollection, measurementsCollection)
 
 	port := os.Getenv("PORT")
 	if port == "" {
