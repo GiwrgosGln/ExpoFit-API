@@ -78,5 +78,11 @@ func SetupRoutes(r *gin.Engine, usersCollection, exercisesCollection, workoutsCo
 	// Delete a measurement by ID
 	r.DELETE("/delete-measurement/:id", func(c *gin.Context) {
 		handlers.DeleteMeasurementHandler(c, measurementsCollection)
-	})	
+	})
+
+	// Define endpoint for getting workouts by exercise name and user ID
+	r.GET("/exercise-sets", func(c *gin.Context) {
+		handlers.GetExerciseSetsHandler(c, workoutsCollection)
+	})
+
 }

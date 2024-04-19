@@ -3,6 +3,7 @@ package handlers
 import (
 	"context"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
@@ -27,4 +28,65 @@ func GetAllExercisesHandler(c *gin.Context, collection *mongo.Collection) {
 	}
 
 	c.JSON(http.StatusOK, exercises)
+}
+
+// GetExerciseSetsHandler retrieves workout sets for a specific exercise, user ID, and date
+func GetExerciseSetsHandler(c *gin.Context, collection *mongo.Collection) {
+	// Parse exercise name, user ID, and date from request parameters
+	exerciseName := c.Query("exercise")
+	userID := c.Query("userid")
+	date := c.Query("date")
+
+	// Query to find workouts matching exercise name, user ID, and date
+	filter := bson.M{"user_id": userID, "exercises.name": exerciseName}
+	if date != "" {
+		filter["date"] = date
+	}
+	cursor, err := collection.Find(context.Background(), filter)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve workouts"})
+		return
+	}
+	defer cursor.Close(context.Background())
+
+	// Initialize map to store sets grouped by workout date
+	setsByDate := make(map[string][]models.Set)
+
+	var workouts []models.Workout
+	if err := cursor.All(context.Background(), &workouts); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to decode workouts"})
+		return
+	}
+
+	// Extract sets with non-null values for weight and reps
+	for _, workout := range workouts {
+		for _, exercise := range workout.Exercises {
+			if exercise.Name == exerciseName {
+				for _, set := range exercise.Sets {
+					if set.Weight != nil && set.Reps != nil {
+						// Add set to map, grouped by workout date
+						dateString := workout.Date.Format(time.RFC3339)
+						setsByDate[dateString] = append(setsByDate[dateString], set)
+					}
+				}
+			}
+		}
+	}
+
+	// Prepare response
+	var response []struct {
+		Date string         `json:"date"`
+		Sets []models.Set `json:"sets"`
+	}
+	for date, sets := range setsByDate {
+		response = append(response, struct {
+			Date string         `json:"date"`
+			Sets []models.Set `json:"sets"`
+		}{
+			Date: date,
+			Sets: sets,
+		})
+	}
+
+	c.JSON(http.StatusOK, response)
 }
