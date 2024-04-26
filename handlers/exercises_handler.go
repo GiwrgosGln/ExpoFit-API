@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"context"
+	"math"
 	"net/http"
 	"time"
 
@@ -89,4 +90,63 @@ func GetExerciseSetsHandler(c *gin.Context, collection *mongo.Collection) {
 	}
 
 	c.JSON(http.StatusOK, response)
+}
+
+// CalculateOneRepMaxHandler calculates the one-rep max for each set of a specific exercise
+func CalculateOneRepMaxHandler(c *gin.Context, collection *mongo.Collection) {
+    // Parse exercise name, user ID, and date from request parameters
+    exerciseName := c.Query("exercise")
+    userID := c.Query("userid")
+    date := c.Query("date")
+
+    // Query to find workouts matching exercise name, user ID, and date
+    filter := bson.M{"user_id": userID, "exercises.name": exerciseName}
+    if date != "" {
+        filter["date"] = date
+    }
+    cursor, err := collection.Find(context.Background(), filter)
+    if err != nil {
+        c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve workouts"})
+        return
+    }
+    defer cursor.Close(context.Background())
+
+    var workouts []models.Workout
+    if err := cursor.All(context.Background(), &workouts); err != nil {
+        c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to decode workouts"})
+        return
+    }
+
+    // Initialize a map to store the maximum one-rep max value for each workout date
+    oneRepMaxByDate := make(map[string]float64)
+
+    // Calculate one-rep max for each set
+    for _, workout := range workouts {
+        dateString := workout.Date.Format(time.RFC3339)
+        for _, exercise := range workout.Exercises {
+            if exercise.Name == exerciseName {
+                for _, set := range exercise.Sets {
+                    if set.Weight != nil && set.Reps != nil {
+                        // Convert Weight to float64 and calculate one-rep max using the formula
+                        weight := float64(*set.Weight)
+                        oneRepMax := weight / (1.0278 - 0.0278*float64(*set.Reps))
+                        // Take the absolute value of the calculated one-rep max
+                        oneRepMax = math.Abs(oneRepMax)
+                        // Update the maximum one-rep max value for the workout date
+                        if oneRepMaxByDate[dateString] < oneRepMax {
+                            oneRepMaxByDate[dateString] = oneRepMax
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // Prepare response
+    response := make(map[string]float64)
+    for date, max := range oneRepMaxByDate {
+        response[date] = max
+    }
+
+    c.JSON(http.StatusOK, response)
 }

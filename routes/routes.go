@@ -85,4 +85,10 @@ func SetupRoutes(r *gin.Engine, usersCollection, exercisesCollection, workoutsCo
 		handlers.GetExerciseSetsHandler(c, workoutsCollection)
 	})
 
+	// Add the route for calculating one-rep max
+	r.GET("/one-rep-max", func(c *gin.Context) {
+		handlers.CalculateOneRepMaxHandler(c, workoutsCollection)
+	})
+
+
 }
