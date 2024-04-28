@@ -123,6 +123,9 @@ func GetWorkoutsPerWeekHandler(c *gin.Context, collection *mongo.Collection) {
 
     // Calculate the start of the current week (Monday) in the server's time zone
     currentWeekStart := now.AddDate(0, 0, -int(now.Weekday())+1).Truncate(24 * time.Hour)
+    if now.Weekday() == time.Sunday {
+        currentWeekStart = now.AddDate(0, 0, -6).Truncate(24 * time.Hour)
+    }
 
     // Define the start date for the last 5 weeks to include the current week
     fiveWeeksAgo := currentWeekStart.AddDate(0, 0, -28)
