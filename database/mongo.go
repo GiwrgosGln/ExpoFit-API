@@ -14,10 +14,12 @@ import (
 
 // ConnectMongoDB connects to MongoDB and initializes the specified collection
 func ConnectMongoDB(collectionName string) (*mongo.Collection, error) {
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatal("Error loading .env file")
-	}
+	if os.Getenv("ENVIRONMENT") != "production" {
+		err := godotenv.Load()
+		if err != nil {
+			log.Fatal("Error loading .env file")
+		}
+	}	
 
 	// Load MongoDB URI and Database Name from the environment variables
 	mongoURI := os.Getenv("MONGODB_URI")
