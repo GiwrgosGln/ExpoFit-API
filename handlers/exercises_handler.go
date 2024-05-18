@@ -117,12 +117,12 @@ func CalculateOneRepMaxHandler(c *gin.Context, collection *mongo.Collection) {
         return
     }
 
-    // Initialize a map to store the maximum one-rep max value for each workout date
+    // Initialize a map to store the one-rep max value for each workout date
     oneRepMaxByDate := make(map[string]float64)
 
     // Calculate one-rep max for each set
     for _, workout := range workouts {
-        dateString := workout.Date.Format(time.RFC3339)
+        dateString := workout.Date.Format("2006-01-02") // Format date as "YYYY-MM-DD"
         for _, exercise := range workout.Exercises {
             if exercise.Name == exerciseName {
                 for _, set := range exercise.Sets {
@@ -132,20 +132,22 @@ func CalculateOneRepMaxHandler(c *gin.Context, collection *mongo.Collection) {
                         oneRepMax := weight / (1.0278 - 0.0278*float64(*set.Reps))
                         // Take the absolute value of the calculated one-rep max
                         oneRepMax = math.Abs(oneRepMax)
-                        // Update the maximum one-rep max value for the workout date
-                        if oneRepMaxByDate[dateString] < oneRepMax {
-                            oneRepMaxByDate[dateString] = oneRepMax
-                        }
+                        // Update the one-rep max value for the workout date
+                        oneRepMaxByDate[dateString] = oneRepMax
                     }
                 }
             }
         }
     }
 
-    // Prepare response
-    response := make(map[string]float64)
+    // Prepare response with dates and corresponding one-rep max values
+    var response []map[string]interface{}
     for date, max := range oneRepMaxByDate {
-        response[date] = max
+        entry := map[string]interface{}{
+            "date": date,
+            "max":  max,
+        }
+        response = append(response, entry)
     }
 
     c.JSON(http.StatusOK, response)
