@@ -1,4 +1,3 @@
-// database/mongogo.go
 package database
 
 import (
